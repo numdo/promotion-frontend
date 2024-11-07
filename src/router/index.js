@@ -7,7 +7,7 @@ import Posts from '@/views/Posts.vue' // 새로 추가
 import Contact from '@/views/Contact.vue'
 import Admin from '@/views/Admin.vue'
 import Login from '@/views/Login.vue' // 로그인 페이지 추가
-import { useAuthStore } from '@/stores/auth'
+import PageList from '@/views/PageList.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -19,6 +19,11 @@ const routes = [
   // { path: '/admin', name: 'Admin', component: Admin },
   { path: '/admin', name: 'Admin', component: Admin, meta: { requiresAuth: true } },
   { path: '/login', name: 'Login', component: Login },
+  {
+    path: '/pages/subcategory/:subCategoryId',
+    name: 'PageList',
+    component: PageList,
+  },
   // 404 페이지 등 추가 가능
 ]
 
