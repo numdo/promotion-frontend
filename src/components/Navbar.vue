@@ -18,12 +18,12 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ms-auto py-4 py-lg-0">
           <!-- 기존의 하드코딩된 메뉴 항목 -->
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <router-link class="nav-link px-lg-3 py-3 py-lg-4" to="/">Home</router-link>
           </li>
           <li class="nav-item">
             <router-link class="nav-link px-lg-3 py-3 py-lg-4" to="/about">About</router-link>
-          </li>
+          </li> -->
           <!-- 동적으로 생성되는 메뉴 항목 -->
           <li
             v-for="mainCategory in mainCategories"
@@ -55,12 +55,12 @@
             </ul>
           </li>
           <!-- 추가 메뉴 항목 (필요에 따라) -->
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <router-link class="nav-link px-lg-3 py-3 py-lg-4" to="/contact">Contact</router-link>
           </li>
           <li class="nav-item">
             <router-link class="nav-link px-lg-3 py-3 py-lg-4" to="/admin">Admin</router-link>
-          </li>
+          </li> -->
         </ul>
       </div>
     </div>

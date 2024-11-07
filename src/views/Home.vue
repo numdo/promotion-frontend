@@ -1,97 +1,195 @@
-<!-- src/views/Home.vue -->
 <template>
   <div>
-    <!-- Page Header -->
-    <header class="masthead" :style="{ backgroundImage: `url(${homeBg})` }">
-      <div class="container position-relative px-4 px-lg-5">
-        <div class="row gx-4 gx-lg-5 justify-content-center">
-          <div class="col-md-10 col-lg-8 col-xl-7">
-            <div class="site-heading">
-              <h1>Clean Blog</h1>
-              <span class="subheading">A Blog Theme by Start Bootstrap</span>
-            </div>
-          </div>
+    <!-- Swiper 슬라이더 -->
+    <Swiper
+      :modules="modules"
+      :slides-per-view="1"
+      :space-between="0"
+      :loop="true"
+      :autoplay="{
+        delay: 10000,
+        disableOnInteraction: false,
+      }"
+      :pagination="{ clickable: true }"
+      :navigation="true"
+      class="mySwiper"
+    >
+      <SwiperSlide v-for="(slide, index) in slides" :key="index">
+        <img :src="slide.image" :alt="slide.title" />
+        <div class="slide-caption">
+          <h2>{{ slide.title }}</h2>
+          <p>{{ slide.description }}</p>
         </div>
-      </div>
-    </header>
+      </SwiperSlide>
+    </Swiper>
 
-    <!-- Main Content -->
-    <div class="container px-4 px-lg-5">
-      <div class="row gx-4 gx-lg-5 justify-content-center">
-        <div class="col-md-10 col-lg-8 col-xl-7">
-          <!-- Post preview -->
-          <div class="post-preview" v-for="post in posts" :key="post.id">
-            <router-link :to="`/post/${post.id}`">
-              <h2 class="post-title">{{ post.title }}</h2>
-              <h3 class="post-subtitle">{{ post.subtitle }}</h3>
-            </router-link>
-            <p class="post-meta">
-              Posted by
-              <a href="#!">Start Bootstrap</a>
-              on {{ post.date }}
-            </p>
-            <hr class="my-4" />
-          </div>
-          <!-- Pager -->
-          <div class="d-flex justify-content-end mb-4">
-            <button class="btn btn-primary text-uppercase" @click="loadOlderPosts">Older Posts →</button>
-          </div>
-        </div>
+    <!-- 컨텐츠 섹션 -->
+    <section v-for="(content, index) in contents" :key="index" class="content-section">
+      <div dat-aos='fade-right' class="container">
+        <h2>{{ content.title }}</h2>
+        <p>{{ content.description }}</p>
       </div>
-    </div>
+    </section>
+
+    <!-- Contact 섹션 -->
+    <section class="contact-section">
+      <div class="container">
+        <h2>Contact Us</h2>
+        <!-- 연락처 정보 또는 폼 추가 -->
+        <p>여기에 연락처 정보를 입력하세요.</p>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
-import homeBg from '@/assets/img/home-bg.jpg'
+import { ref } from 'vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/scrollbar';
+
+// 필요한 모듈 임포트
+import { Autoplay, Navigation, Pagination, Scrollbar } from 'swiper/modules';
+
+// 이미지 임포트
+import slide1 from '@/assets/img/main-1.jpg';
+import slide2 from '@/assets/img/main-2.jpg';
+import slide3 from '@/assets/img/main-3.jpg';
 
 export default {
   name: 'Home',
+  components: {
+    Swiper,
+    SwiperSlide,
+  },
   setup() {
-    const posts = [
-      {
-        id: 1,
-        title: 'Man must explore, and this is exploration at its greatest',
-        subtitle: 'Problems look mighty small from 150 miles up',
-        date: 'September 24, 2023',
-      },
-      {
-        id: 2,
-        title: "I believe every human has a finite number of heartbeats. I don't intend to waste any of mine.",
-        subtitle: '',
-        date: 'September 18, 2023',
-      },
-      {
-        id: 3,
-        title: 'Science has not yet mastered prophecy',
-        subtitle: 'We predict too much for the next year and yet far too little for the next ten.',
-        date: 'August 24, 2023',
-      },
-      {
-        id: 4,
-        title: 'Failure is not an option',
-        subtitle: 'Many say exploration is part of our destiny, but it’s actually our duty to future generations.',
-        date: 'July 8, 2023',
-      },
-    ]
+    const modules = [Autoplay, Navigation, Pagination, Scrollbar];
 
-    const loadOlderPosts = () => {
-      // 추가적인 포스트 로드 로직
-      alert('더 많은 포스트를 로드합니다.')
-    }
+    const slides = [
+      {
+        image: slide1,
+        title: '슬라이드 제목 1',
+        description: '슬라이드 설명 1',
+      },
+      {
+        image: slide2,
+        title: '슬라이드 제목 2',
+        description: '슬라이드 설명 2',
+      },
+      {
+        image: slide3,
+        title: '슬라이드 제목 3',
+        description: '슬라이드 설명 3',
+      },
+    ];
+
+    const contents = [
+      {
+        title: '컨텐츠 제목 1',
+        description: '컨텐츠 내용 1',
+      },
+      {
+        title: '컨텐츠 제목 2',
+        description: '컨텐츠 내용 2',
+      },
+      {
+        title: '컨텐츠 제목 3',
+        description: '컨텐츠 내용 3',
+      },
+    ];
+
+    const onSwiper = (swiper) => {
+      console.log(swiper);
+    };
+
+    const onSlideChange = () => {
+      console.log('slide change');
+    };
 
     return {
-      homeBg,
-      posts,
-      loadOlderPosts,
-    }
+      modules,
+      slides,
+      contents,
+      onSwiper,
+      onSlideChange,
+    };
   },
-}
+};
 </script>
 
 <style scoped>
-.masthead {
-  background-size: cover;
-  background-position: center;
+/* Swiper 슬라이더 스타일 */
+.mySwiper {
+  width: 100%;
+  height: 50%;
+}
+
+.mySwiper .swiper-slide {
+  position: relative;
+  text-align: center;
+}
+
+.mySwiper .swiper-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.slide-caption {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+}
+
+.slide-caption h2 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.slide-caption p {
+  font-size: 1.2rem;
+}
+
+/* 컨텐츠 섹션 스타일 */
+.content-section {
+  padding: 60px 0;
+}
+
+.content-section:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.content-section .container {
+  max-width: 800px;
+}
+
+.content-section h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.content-section p {
+  font-size: 1rem;
+}
+
+/* Contact 섹션 스타일 */
+.contact-section {
+  padding: 60px 0;
+  background-color: #333;
+  color: #fff;
+}
+
+.contact-section h2 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.contact-section p {
+  font-size: 1rem;
 }
 </style>
