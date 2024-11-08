@@ -1,4 +1,3 @@
-<!-- src/views/Login.vue -->
 <template>
   <TheHeader :headerImage="headerImage" :title="headerTitle" />
   <main class="mb-4">
@@ -20,7 +19,6 @@
       </div>
     </div>
   </main>
-
 </template>
 
 <script>
@@ -28,7 +26,7 @@ import api from '@/services/api'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import headerImage from '@/assets/img/home-bg.jpg';
+import headerImage from '@/assets/img/home-bg.jpg'
 
 export default {
   name: 'Login',
@@ -43,13 +41,22 @@ export default {
 
     const login = async () => {
       try {
+        // 백엔드에서 로그인 API 호출
         const response = await api.post('/auth/login', credentials.value)
+
+        // 토큰을 로컬스토리지에 저장
         const token = response.data.token
-        localStorage.setItem('jwtToken', token)
-        authStore.setToken(token)
-        // 성공 시 홈 또는 관리자 페이지로 이동
-        router.push('/admin')
+        if (token) {
+          localStorage.setItem('jwtToken', token)  // 로컬스토리지에 JWT 토큰 저장
+          authStore.setToken(token)  // 상태 관리 스토어에 토큰 저장 (필요시)
+
+          // 성공 시 관리자 페이지로 리다이렉트
+          router.push('/admin')  // 권한에 맞는 페이지로 이동
+        } else {
+          throw new Error('토큰이 반환되지 않았습니다.')
+        }
       } catch (error) {
+        // 에러 메시지 처리
         errorMessage.value = error.response?.data?.message || '로그인에 실패했습니다.'
       }
     }
