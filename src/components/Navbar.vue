@@ -2,7 +2,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light" id="mainNav">
     <div class="container px-4 px-lg-5">
-      <router-link class="navbar-brand" to="/">Promotion Site</router-link>
+      <router-link class="navbar-brand" to="/"><img src="@/assets/img/main-logo.png" alt="메인 로고"/></router-link>
       <button
         class="navbar-toggler"
         type="button"
@@ -69,6 +69,7 @@
 
 <script>
 import axios from '@/plugins/axios';
+import mainLogo from '@/assets/img/main-logo.png';
 
 export default {
   name: 'Navbar',
