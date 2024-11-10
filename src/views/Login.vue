@@ -26,10 +26,14 @@ import api from '@/services/api'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import TheHeader from "@/components/TheHeader.vue"; // TheHeader 컴포넌트 임포트
 import headerImage from '@/assets/img/home-bg.jpg'
 
 export default {
   name: 'Login',
+  components: {
+    TheHeader,
+  },
   setup() {
     const credentials = ref({
       userId: '',
@@ -44,20 +48,21 @@ export default {
         // 백엔드에서 로그인 API 호출
         const response = await api.post('/auth/login', credentials.value)
 
-        // 토큰을 로컬스토리지에 저장
-        const token = response.data.token
-        if (token) {
-          localStorage.setItem('jwtToken', token)  // 로컬스토리지에 JWT 토큰 저장
-          authStore.setToken(token)  // 상태 관리 스토어에 토큰 저장 (필요시)
+        // TokenInfo 객체를 받아옴
+        const tokenInfo = response.data; // { grantType, accessToken, refreshToken }
+        console.log(tokenInfo)
+        if (tokenInfo.accessToken) {
+          // 토큰을 Pinia 스토어와 localStorage에 저장
+          authStore.setToken(tokenInfo);
 
-          // 성공 시 관리자 페이지로 리다이렉트
-          router.push('/admin')  // 권한에 맞는 페이지로 이동
+          // 로그인 성공 시 관리자 페이지로 리다이렉트
+          router.push('/admin');
         } else {
-          throw new Error('토큰이 반환되지 않았습니다.')
+          throw new Error('토큰이 반환되지 않았습니다.');
         }
       } catch (error) {
-        // 에러 메시지 처리
-        errorMessage.value = error.response?.data?.message || '로그인에 실패했습니다.'
+        console.error(error);
+        errorMessage.value = error.response?.data?.message || '로그인에 실패했습니다.';
       }
     }
 
@@ -65,6 +70,8 @@ export default {
       credentials,
       errorMessage,
       login,
+      headerImage,
+      headerTitle : '로그인',
     }
   },
 }

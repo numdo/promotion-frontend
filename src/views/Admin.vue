@@ -16,6 +16,9 @@
           <i class="fas fa-folder me-2"></i> {{ category.name }}
         </a>
       </div>
+      <!-- 로그아웃 버튼 추가 -->
+      <button class="btn btn-danger mt-4" @click="logout">로그아웃</button>
+
     </div>
 
     <!-- 메인 콘텐츠 -->
@@ -71,11 +74,14 @@
 </template>
 
 <script>
-import axios from '@/plugins/axios';
+import api from '@/services/api';
+// import axios from '@/plugins/axios';
 import { ref, reactive, onMounted } from 'vue';
 import EditorComponent from '@/components/EditorComponent.vue';
 import TheHeader from '@/components/TheHeader.vue'; // TheHeader 임포트
 import headerImage from '@/assets/img/home-bg.jpg';
+import { useAuthStore } from '@/stores/auth';
+import { useRouter } from 'vue-router';
 
 export default {
   name: 'AdminPage',
@@ -94,13 +100,19 @@ export default {
     const headerTitle = ref('관리자 페이지');
     const headerImageUrl = headerImage;
     const currentEditingPageId = ref(null); // 현재 편집 중인 페이지 ID
+    const authStore = useAuthStore();
+    const router = useRouter();
 
     // 사이드바 토글
     const toggleSidebar = () => {
       const sidebar = document.getElementById('sidebar-wrapper');
       sidebar.classList.toggle('toggled');
     };
-
+    // 로그아웃 함수
+    const logout = () => {
+      authStore.signout();
+      router.push('/login');
+    };
     // 대분류 클릭 시 중분류 로드 및 선택
     const toggleSubCategories = (categoryId) => {
       if (selectedCategory.value && selectedCategory.value.id === categoryId) {
@@ -138,7 +150,7 @@ export default {
     // 데이터 가져오기
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('/main-categories');
+        const response = await api.get('/main-categories');
         console.log('대분류 데이터:', response.data); // 디버깅용
         categories.value = response.data;
       } catch (error) {
@@ -148,7 +160,7 @@ export default {
 
     const fetchSubCategories = async (categoryId) => {
       try {
-        const response = await axios.get(`/main-categories/${categoryId}/sub-categories`);
+        const response = await api.get(`/main-categories/${categoryId}/sub-categories`);
         subCategories[categoryId] = response.data;
       } catch (error) {
         console.error('중분류를 가져오는 데 실패했습니다:', error);
@@ -157,7 +169,7 @@ export default {
 
     const fetchPages = async (subCategoryId) => {
       try {
-        const response = await axios.get(`/pages/subcategory/${subCategoryId}`);
+        const response = await api.get(`/pages/subcategory/${subCategoryId}`);
         pages[subCategoryId] = response.data;
       } catch (error) {
         console.error('페이지를 가져오는 데 실패했습니다:', error);
@@ -165,9 +177,9 @@ export default {
     };
 
     // 에디터에서 변경된 내용 처리
-    const handleUpdateContent = (newContent) => {
-      editorContent.value = newContent;
-    };
+    // const handleUpdateContent = (newContent) => {
+    //   editorContent.value = newContent;
+    // };
 
     // 페이지 내용 저장
     const saveContent = async () => {
@@ -177,7 +189,7 @@ export default {
       }
 
       try {
-        await axios.put(`/pages/${selectedPage.value.id}`, { content: editorContent.value });
+        await api.put(`/pages/${selectedPage.value.id}`, { content: editorContent.value });
         alert('페이지 내용이 성공적으로 저장되었습니다.');
         // 선택한 페이지의 내용을 업데이트
         selectedPage.value.content = editorContent.value;
@@ -193,7 +205,7 @@ export default {
       if (!confirm('정말로 이 페이지를 삭제하시겠습니까?')) return;
 
       try {
-        await axios.delete(`/pages/${pageId}`);
+        await api.delete(`/pages/${pageId}`);
         alert('페이지가 성공적으로 삭제되었습니다.');
         // 삭제 후 해당 페이지를 리스트에서 제거
         const subId = selectedSubCategory.value.id;
@@ -227,10 +239,11 @@ export default {
       toggleSubCategories,
       togglePages,
       selectPage,
-      handleUpdateContent,
+      // handleUpdateContent,
       saveContent,
       deletePage,
-      currentEditingPageId,
+      // currentEditingPageId,
+      logout,
     };
   },
 };

@@ -1,28 +1,66 @@
 // src/stores/auth.js
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-export const useAuthStore = defineStore('auth', {
+function base64DecodeUnicode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/'); // Base64 URL Safe 변환
+  const pad = str.length % 4;
+  if (pad) {
+    if (pad === 1) {
+      throw new Error('InvalidLengthError: Input base64url string is the wrong length to determine padding');
+    }
+    str += new Array(5 - pad).join('=');
+  }
+  const binaryString = atob(str);
+  const chars = [];
+  for (let i = 0; i < binaryString.length; i++) {
+    chars.push("%" + ("00" + binaryString.charCodeAt(i).toString(16)).slice(-2));
+  }
+  return decodeURIComponent(chars.join(""));
+}
+
+export const useAuthStore = defineStore("auth", {
   state: () => ({
-    token: localStorage.getItem('jwtToken') || '',  // 로컬스토리지에서 초기화
+    accessToken: localStorage.getItem('accessToken') || '',
+    refreshToken: localStorage.getItem('refreshToken') || '',
+    userId: null,
+    role: null,
   }),
 
+  getters: {
+    isAuthenticated: (state) => !!state.accessToken,
+    getUserId: (state) => state.userId,
+    getRole: (state) => state.role,
+  },
+
   actions: {
-    setToken(token) {
-      this.token = token
-      localStorage.setItem('jwtToken', token)  // 토큰을 로컬스토리지에 저장
-    },
+    setToken(tokenInfo) {
+      this.accessToken = tokenInfo.accessToken;
+      this.refreshToken = tokenInfo.refreshToken;
+      localStorage.setItem('accessToken', tokenInfo.accessToken);
+      localStorage.setItem('refreshToken', tokenInfo.refreshToken);
 
-    removeToken() {
-      this.token = ''
-      localStorage.removeItem('jwtToken')  // 로컬스토리지에서 토큰 제거
+      // JWT 토큰 디코딩하여 사용자 정보 설정
+      const payload = JSON.parse(base64DecodeUnicode(tokenInfo.accessToken.split(".")[1]));
+      this.userId = payload.userId;
+      this.role = payload.role;
     },
-
-    isAuthenticated() {
-      return !!this.token  // 토큰이 있는지 여부로 인증 상태 확인
+    signout() {
+      this.accessToken = '';
+      this.refreshToken = '';
+      this.userId = null;
+      this.role = null;
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
     },
   },
 
-  getters: {
-    isAuthenticated: (state) => !!state.token,  // 로그인 상태 확인
-  }
-})
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        key: "auth",
+        storage: localStorage,
+      },
+    ],
+  },
+});
