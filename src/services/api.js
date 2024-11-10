@@ -1,7 +1,5 @@
 // src/services/api.js
 import axios from "axios";
-import { useAuthStore } from "@/stores/auth";
-import { useRouter } from 'vue-router';
 
 const { VITE_API_URL } = import.meta.env;
 
@@ -13,11 +11,11 @@ const api = axios.create({
   withCredentials: true, // 쿠키 기반 인증 시 필요
 });
 
-// 요청 인터셉터: Pinia에 토큰이 있으면 헤더에 포함
+// 요청 인터셉터: 로컬스토리지에서 토큰을 직접 가져옴
 api.interceptors.request.use((config) => {
-  const authStore = useAuthStore();
-  if (authStore.accessToken) {
-    config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+  const token = localStorage.getItem('accessToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 }, (error) => {
@@ -28,14 +26,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use((response) => {
     return response;
   }, (error) => {
-    const authStore = useAuthStore();
-    const router = useRouter();
-
     if (error.response && error.response.status === 401) {
-      authStore.signout();
-      router.push("/login"); // 로그인 페이지로 리다이렉트
+      // Token 만료 시 처리
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      window.location.href = '/login'; // 직접 리다이렉트
     }
-
     return Promise.reject(error);
   }
 );

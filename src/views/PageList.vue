@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import axios from '@/plugins/axios';
+import api from '@/services/api.js';
 //   import TheHeader from '@/components/TheHeader.vue';
 import headerImage from '@/assets/img/home-bg.jpg';
 
@@ -72,7 +72,7 @@ export default {
   methods: {
     async fetchPages(subCategoryId) {
       try {
-        const response = await axios.get(`/pages/subcategory/${subCategoryId}`);
+        const response = await api.get(`/pages/subcategory/${subCategoryId}`);
         this.pages = response.data;
         if (this.pages.length > 0) {
           this.selectedPage = this.pages[0]; // 첫 번째 페이지를 기본 선택
@@ -84,7 +84,7 @@ export default {
     },
     async fetchSubCategoryName(subCategoryId) {
       try {
-        const response = await axios.get(`/sub-categories/${subCategoryId}`);
+        const response = await api.get(`/sub-categories/${subCategoryId}`);
         this.subCategoryName = response.data.name;
         this.headerTitle = this.subCategoryName;
       } catch (error) {

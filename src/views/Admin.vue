@@ -75,7 +75,6 @@
 
 <script>
 import api from '@/services/api';
-// import axios from '@/plugins/axios';
 import { ref, reactive, onMounted } from 'vue';
 import EditorComponent from '@/components/EditorComponent.vue';
 import TheHeader from '@/components/TheHeader.vue'; // TheHeader 임포트
@@ -102,7 +101,6 @@ export default {
     const currentEditingPageId = ref(null); // 현재 편집 중인 페이지 ID
     const authStore = useAuthStore();
     const router = useRouter();
-
     // 사이드바 토글
     const toggleSidebar = () => {
       const sidebar = document.getElementById('sidebar-wrapper');
@@ -145,6 +143,7 @@ export default {
       editorContent.value = page.content;
       currentEditingPageId.value = page.id;
       headerTitle.value = page.title;
+      console.log("selectPage.value : " + selectPage.value)
     };
 
     // 데이터 가져오기
@@ -171,6 +170,7 @@ export default {
       try {
         const response = await api.get(`/pages/subcategory/${subCategoryId}`);
         pages[subCategoryId] = response.data;
+        console.log("가져온 데이터 : "+pages[subCategoryId]);
       } catch (error) {
         console.error('페이지를 가져오는 데 실패했습니다:', error);
       }
@@ -224,6 +224,7 @@ export default {
     onMounted(() => {
       fetchCategories();
     });
+    console.log(selectedPage.value);
 
     return {
       categories,

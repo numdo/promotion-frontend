@@ -68,7 +68,8 @@
 </template>
 
 <script>
-import axios from '@/plugins/axios';
+// import axios from '@/plugins/axios.js';
+import api from '@/services/api';
 import mainLogo from '@/assets/img/main-logo.png';
 
 export default {
@@ -84,12 +85,12 @@ export default {
   methods: {
     async fetchCategories() {
       try {
-        const response = await axios.get('/main-categories');
+        const response = await api.get('/main-categories');
         this.mainCategories = response.data;
 
         // 각 MainCategory에 SubCategories를 추가로 가져옵니다.
         for (let mainCategory of this.mainCategories) {
-          const subResponse = await axios.get(
+          const subResponse = await api.get(
             `/main-categories/${mainCategory.id}/sub-categories`
           );
           mainCategory.subCategories = subResponse.data;
