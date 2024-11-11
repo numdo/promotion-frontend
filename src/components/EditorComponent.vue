@@ -39,7 +39,7 @@ onMounted(() => {
   editorInstance.value = new Editor({
     el: editorContainer.value, // 에디터를 마운트할 DOM 요소
     height: '500px',
-    initialEditType: 'wysiwyg', // 'wysiwyg' 또는 'markdown' 선택 가능
+    initialEditType: 'markdown', // 'wysiwyg' 또는 'markdown' 선택 가능
     previewStyle: 'vertical',
     initialValue: props.modelValue, // 초기 내용 설정
     useCommandShortcut: true,
@@ -49,6 +49,13 @@ onMounted(() => {
         emit('update:modelValue', markdown); // 부모 컴포넌트로 내용 업데이트 이벤트 전송
         updateTestHtml(); // HTML 업데이트
       },
+      hooks: {
+        addImageBlobHook(blob, callback) {  // 이미지 업로드 로직 커스텀
+          console.log(blob);
+          console.log(callback);
+        }
+      }
+
     },
   });
 

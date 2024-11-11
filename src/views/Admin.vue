@@ -18,7 +18,6 @@
       </div>
       <!-- 로그아웃 버튼 추가 -->
       <button class="btn btn-danger mt-4" @click="logout">로그아웃</button>
-
     </div>
 
     <!-- 메인 콘텐츠 -->
@@ -61,7 +60,7 @@
         <!-- 페이지 편집 영역 -->
         <div v-if="selectedPage" class="mt-4">
           <h2>{{ selectedPage.title }}</h2>
-          <EditorComponent v-model="selectedPage.content" />
+          <EditorComponent v-model="editorContent" />
           <button class="btn btn-success mt-3" @click="saveContent">저장</button>
         </div>
 
@@ -98,19 +97,21 @@ export default {
     const editorContent = ref('');
     const headerTitle = ref('관리자 페이지');
     const headerImageUrl = headerImage;
-    const currentEditingPageId = ref(null); // 현재 편집 중인 페이지 ID
     const authStore = useAuthStore();
     const router = useRouter();
+
     // 사이드바 토글
     const toggleSidebar = () => {
       const sidebar = document.getElementById('sidebar-wrapper');
       sidebar.classList.toggle('toggled');
     };
+
     // 로그아웃 함수
     const logout = () => {
       authStore.signout();
       router.push('/login');
     };
+
     // 대분류 클릭 시 중분류 로드 및 선택
     const toggleSubCategories = (categoryId) => {
       if (selectedCategory.value && selectedCategory.value.id === categoryId) {
@@ -139,11 +140,16 @@ export default {
 
     // 페이지 선택
     const selectPage = (page) => {
+      if (!page || !page.id) {
+        alert('선택한 페이지에 유효한 ID가 없습니다.');
+        return;
+      }
+
       selectedPage.value = page;
       editorContent.value = page.content;
-      currentEditingPageId.value = page.id;
       headerTitle.value = page.title;
-      console.log("selectPage.value : " + selectPage.value)
+
+      console.log("Selected Page:", selectedPage.value); // 선택한 페이지의 모든 데이터 출력
     };
 
     // 데이터 가져오기
@@ -161,6 +167,7 @@ export default {
       try {
         const response = await api.get(`/main-categories/${categoryId}/sub-categories`);
         subCategories[categoryId] = response.data;
+        console.log(`중분류 데이터 (카테고리 ID: ${categoryId}):`, response.data); // 디버깅용
       } catch (error) {
         console.error('중분류를 가져오는 데 실패했습니다:', error);
       }
@@ -170,38 +177,50 @@ export default {
       try {
         const response = await api.get(`/pages/subcategory/${subCategoryId}`);
         pages[subCategoryId] = response.data;
-        console.log("가져온 데이터 : "+pages[subCategoryId]);
+        console.log(`페이지 데이터 (중분류 ID: ${subCategoryId}):`, pages[subCategoryId]); // 디버깅용
       } catch (error) {
         console.error('페이지를 가져오는 데 실패했습니다:', error);
       }
     };
 
-    // 에디터에서 변경된 내용 처리
-    // const handleUpdateContent = (newContent) => {
-    //   editorContent.value = newContent;
-    // };
-
     // 페이지 내용 저장
     const saveContent = async () => {
-      if (!selectedPage.value) {
+      if (!selectedPage.value || !selectedPage.value.id) { // id 확인 추가
         alert('저장할 페이지를 선택해주세요.');
         return;
       }
 
+      console.log("Saving Page ID:", selectedPage.value.id);
+      console.log("SubCategory ID:", selectedPage.value.subCategoryId);
+      console.log("Title:", selectedPage.value.title);
+      console.log("Content:", editorContent.value);
+
       try {
-        await api.put(`/pages/${selectedPage.value.id}`, { content: editorContent.value });
+        await api.put(`/pages/${selectedPage.value.id}`, {
+          subCategoryId: selectedPage.value.subCategoryId,
+          title: selectedPage.value.title,
+          content: editorContent.value
+        });
         alert('페이지 내용이 성공적으로 저장되었습니다.');
         // 선택한 페이지의 내용을 업데이트
         selectedPage.value.content = editorContent.value;
-        currentEditingPageId.value = null;
       } catch (error) {
         console.error('페이지 내용을 저장하는 데 실패했습니다:', error);
-        alert('페이지 내용을 저장하는 데 실패했습니다.');
+        if (error.response && error.response.data) {
+          alert(`페이지 저장 실패: ${error.response.data.message}`);
+        } else {
+          alert('페이지 내용을 저장하는 데 실패했습니다.');
+        }
       }
     };
 
     // 페이지 삭제
     const deletePage = async (pageId) => {
+      if (!pageId) { // pageId 확인 추가
+        alert('삭제할 페이지 ID가 유효하지 않습니다.');
+        return;
+      }
+
       if (!confirm('정말로 이 페이지를 삭제하시겠습니까?')) return;
 
       try {
@@ -209,7 +228,9 @@ export default {
         alert('페이지가 성공적으로 삭제되었습니다.');
         // 삭제 후 해당 페이지를 리스트에서 제거
         const subId = selectedSubCategory.value.id;
-        pages[subId] = pages[subId].filter(page => page.id !== pageId);
+        if (pages[subId]) {
+          pages[subId] = pages[subId].filter(page => page.id !== pageId);
+        }
         if (selectedPage.value && selectedPage.value.id === pageId) {
           selectedPage.value = null;
           editorContent.value = '';
@@ -217,14 +238,17 @@ export default {
         }
       } catch (error) {
         console.error('페이지를 삭제하는 데 실패했습니다:', error);
-        alert('페이지를 삭제하는 데 실패했습니다.');
+        if (error.response && error.response.data) {
+          alert(`페이지 삭제 실패: ${error.response.data.message}`);
+        } else {
+          alert('페이지를 삭제하는 데 실패했습니다.');
+        }
       }
     };
 
     onMounted(() => {
       fetchCategories();
     });
-    console.log(selectedPage.value);
 
     return {
       categories,
@@ -240,10 +264,8 @@ export default {
       toggleSubCategories,
       togglePages,
       selectPage,
-      // handleUpdateContent,
       saveContent,
       deletePage,
-      // currentEditingPageId,
       logout,
     };
   },
